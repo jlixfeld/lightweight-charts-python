@@ -1,21 +1,10 @@
-<div align="center">
 # lightweight-charts-python
 
-## Installation
-
-```bash
-pip install lightweight-charts-esistjosh
-
-
-## Installation
-```
-pip install lightweight-charts-esistjosh
-```
 ## Forked to Add Features
 ![Cover Image](https://raw.githubusercontent.com/EsIstJosh/lightweight-charts-python/main/Screenshot2025-02-07114921.png)
 
-### PineTS integration (original PineTS source: https://github.com/alaa-eddine/PineTS, edited source: https://github.com/EsIstJosh/PineTS) 
-### PineTS related code is licensed seperately using the AGPL3.0 license: [AGPL License](./AGPL_LICENSE) 
+### PineTS integration (original PineTS source: https://github.com/alaa-eddine/PineTS, edited source: https://github.com/EsIstJosh/PineTS)  
+### PineTS related code is licensed seperately using the AGPL3.0 license: [AGPL License](./AGPL_LICENSE)  
     Simple scripting capabilities similar to pinescript, 
     see the [PineTS ReadMe](https://github.com/EsIstJosh/PineTS/blob/bd79b7f2d21d15f7470da118eab4f71638ce07da/README.md) 
     for more information
@@ -61,7 +50,8 @@ pip install lightweight-charts-esistjosh
     - Trend Trace: A transformable/scalable  replica of a section of series between a drawings points. Similar to 'Bars Pattern' in TradingView (instantiated from and linked to existing drawing: box, trendline etc)
 
 
-### Indicators (implemented in typescript, from KLineChart primarily ( https://github.com/klinecharts/KLineChart ))
+### Indicators
+Implemented in typescript from [KLineChart](https://github.com/klinecharts/KLineChart) primarily
     
     Overlay Indicators:
         - Arnaud Legoux Moving Average
@@ -372,11 +362,7 @@ if __name__ == '__main__':
 ![callbacks gif](https://raw.githubusercontent.com/louisnw01/lightweight-charts-python/main/examples/6_callbacks/callbacks.gif)
 ___
 
-<div align="center">
-
 [![Documentation](https://img.shields.io/badge/documentation-006ee3)](https://lightweight-charts-python.readthedocs.io/en/latest/index.html)
-
-Inquiries: [shaders_worker_0e@icloud.com](mailto:shaders_worker_0e@icloud.com)
 ___
 
 _This package is an independent creation and has not been endorsed, sponsored, or approved by TradingView. The author of this package does not have any official relationship with TradingView, and the package does not represent the views or opinions of TradingView._
