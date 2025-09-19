@@ -15,7 +15,8 @@ docker compose -f docker/docker-compose.yml up
 
 Visit <http://localhost:9000> to browse the chart. The interface includes:
 - Interactive chart with OHLC candlesticks
-- Searchable symbol picker with real-time filtering
+- Real-time legend showing Open, High, Low, Close values and percentage change
+- Searchable symbol picker with real-time filtering and keyboard navigation
 - Timeframe selector
 - Inside/outside bar pattern highlighting (enabled by default)
 
@@ -30,7 +31,8 @@ When using database mode, all behavior is controlled via environment variables (
 | Variable | Purpose |
 | --- | --- |
 | `DATABASE_URL` | SQLAlchemy connection string (use a Secret in Kubernetes). |
-| `OHLC_LIMIT` | Maximum rows to return per query (default `500`). |
+| `OHLC_LIMIT` | Maximum rows to return per query (default `0`, unlimited). |
+| `APP_TITLE` | Application title displayed in header (default "Lightweight Charts"). |
 | `DATASET__TABLE` | Table or view holding OHLC candles. |
 | `DATASET__TIME_COLUMN` | Timestamp column. |
 | `DATASET__OPEN_COLUMN` / `HIGH` / `LOW` / `CLOSE` | Price columns. |
@@ -43,17 +45,73 @@ Minimum schema requirements: timestamp, open, high, low, close, symbol, timefram
 
 ## Kubernetes Deployment
 
+### Basic Deployment
+
 ```bash
-# store credentials as a secret
+# Store database credentials as a secret
 kubectl create secret generic lightweight-charts-db-secret \
   --from-literal=DATABASE_URL="postgresql+psycopg2://user:password@db-host:5432/markets"
 
-# adjust env vars in k8s/deployment.yaml as needed, then
+# Apply the deployment and service
 kubectl apply -f k8s/deployment.yaml
 kubectl apply -f k8s/service.yaml
 
-# the pod serves the chart interface
+# Access the chart interface
+kubectl port-forward deploy/lightweight-charts 9000:8000
 ```
+
+### Configuration Management
+
+**Option 1: Direct values in deployment.yaml** (Current method)
+Edit `k8s/deployment.yaml` and modify the environment variables directly:
+```yaml
+env:
+  - name: APP_TITLE
+    value: "My Custom Charts"
+  - name: OHLC_LIMIT
+    value: "1000"
+```
+
+**Option 2: Using ConfigMaps** (Recommended for non-sensitive data)
+```bash
+# Create ConfigMap from .env file
+kubectl create configmap app-config --from-env-file=.env
+
+# Or create manually
+kubectl create configmap app-config \
+  --from-literal=APP_TITLE="My Custom Charts" \
+  --from-literal=OHLC_LIMIT="1000" \
+  --from-literal=DATASET__TABLE="market_data"
+```
+
+Then modify `k8s/deployment.yaml` to use the ConfigMap:
+```yaml
+spec:
+  containers:
+    - name: lightweight-charts
+      envFrom:
+        - configMapRef:
+            name: app-config
+      env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: lightweight-charts-db-secret
+              key: DATABASE_URL
+```
+
+**Option 3: Using Secrets** (For sensitive configuration)
+```bash
+# Create Secret from .env file (for sensitive data)
+kubectl create secret generic app-secrets --from-env-file=.env
+
+# Reference in deployment.yaml
+envFrom:
+  - secretRef:
+      name: app-secrets
+```
+
+**Note:** Unlike Docker Compose, Kubernetes does not automatically load `.env` files. You must explicitly create ConfigMaps or Secrets from your environment files.
 
 Expose the `lightweight-charts-web` service via your preferred ingress/LoadBalancer mechanism. Both `/chart` (HTML) and `/docs` (OpenAPI) are available once the pod is running.
 

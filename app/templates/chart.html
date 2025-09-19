@@ -126,6 +126,49 @@
                 width: 100vw;
                 height: calc(100vh - 90px);
             }
+            .legend {
+                position: absolute;
+                top: 100px;
+                left: 20px;
+                background: rgba(26, 33, 43, 0.9);
+                border: 1px solid #2d3746;
+                border-radius: 8px;
+                padding: 12px;
+                min-width: 200px;
+                z-index: 100;
+                font-size: 12px;
+                line-height: 1.4;
+                backdrop-filter: blur(4px);
+            }
+            .legend-title {
+                font-weight: 600;
+                color: #f5f5f5;
+                margin-bottom: 8px;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+            .legend-row {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 2px;
+                color: #9aa5b1;
+            }
+            .legend-label {
+                margin-right: 3px;
+            }
+            .legend-value {
+                color: #f5f5f5;
+                font-weight: 500;
+            }
+            .legend-change {
+                font-weight: 600;
+            }
+            .legend-change.positive {
+                color: #26a69a;
+            }
+            .legend-change.negative {
+                color: #ef5350;
+            }
             .notice {
                 padding: 24px;
                 text-align: center;
@@ -140,7 +183,7 @@
     </head>
     <body>
         <header>
-            <h1>Lightweight Charts</h1>
+            <h1>{{ app_title }}</h1>
             <div
                 id="error-banner"
                 class="notice"
@@ -166,7 +209,30 @@
                 <select id="timeframe-select"></select>
             </label>
         </header>
-        <div id="chart"></div>
+        <div id="chart">
+            <div id="legend" class="legend" style="display: none">
+                <div class="legend-row">
+                    <span class="legend-label">Open:</span>
+                    <span id="legend-open" class="legend-value">-</span>
+                </div>
+                <div class="legend-row">
+                    <span class="legend-label">High:</span>
+                    <span id="legend-high" class="legend-value">-</span>
+                </div>
+                <div class="legend-row">
+                    <span class="legend-label">Low:</span>
+                    <span id="legend-low" class="legend-value">-</span>
+                </div>
+                <div class="legend-row">
+                    <span class="legend-label">Close:</span>
+                    <span id="legend-close" class="legend-value">-</span>
+                </div>
+                <div class="legend-row">
+                    <span class="legend-label">Change:</span>
+                    <span id="legend-change" class="legend-value legend-change">-</span>
+                </div>
+            </div>
+        </div>
         <div id="empty" class="notice" style="display: none">No data for the selected inputs.</div>
     </body>
 </html>

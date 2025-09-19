@@ -8,6 +8,12 @@
   const symbolList = document.getElementById('symbol-list');
   const timeframeSelect = document.getElementById('timeframe-select');
   const timeframeWrapper = document.getElementById('timeframe-wrapper');
+  const legendContainer = document.getElementById('legend');
+  const legendOpen = document.getElementById('legend-open');
+  const legendHigh = document.getElementById('legend-high');
+  const legendLow = document.getElementById('legend-low');
+  const legendClose = document.getElementById('legend-close');
+  const legendChange = document.getElementById('legend-change');
 
   if (!chartContainer) {
     return;
@@ -393,6 +399,64 @@
     wickDownColor: '#ef5350',
   });
 
+  // Legend update functionality
+  let lastBar = null;
+  let previousBar = null;
+
+  function updateLegend(bar, previousBar) {
+    if (!bar || !legendContainer) {
+      return;
+    }
+
+    legendOpen.textContent = bar.open.toFixed(4);
+    legendHigh.textContent = bar.high.toFixed(4);
+    legendLow.textContent = bar.low.toFixed(4);
+    legendClose.textContent = bar.close.toFixed(4);
+
+    // Calculate numerical and percentage change relative to previous open
+    if (previousBar) {
+      const numericalChange = bar.close - previousBar.open;
+      const percentageChange = (numericalChange / previousBar.open) * 100;
+      const changeText = `${numericalChange >= 0 ? '+' : ''}${numericalChange.toFixed(4)} (${percentageChange >= 0 ? '+' : ''}${percentageChange.toFixed(2)}%)`;
+      legendChange.textContent = changeText;
+      legendChange.className = `legend-value legend-change ${numericalChange >= 0 ? 'positive' : 'negative'}`;
+    } else {
+      legendChange.textContent = '-';
+      legendChange.className = 'legend-value legend-change';
+    }
+
+    legendContainer.style.display = 'block';
+  }
+
+  function hideLegend() {
+    if (legendContainer) {
+      legendContainer.style.display = 'none';
+    }
+  }
+
+  // Subscribe to crosshair position changes for legend updates
+  chart.subscribeCrosshairMove((param) => {
+    if (!param.time || !param.seriesData || !param.seriesData.has(candleSeries)) {
+      // Show last bar when no crosshair position
+      if (lastBar && previousBar) {
+        updateLegend(lastBar, previousBar);
+      } else {
+        hideLegend();
+      }
+      return;
+    }
+
+    const bar = param.seriesData.get(candleSeries);
+    if (bar) {
+      // Find the previous bar for percentage calculation
+      const barTime = param.time;
+      const allData = candleSeries.data();
+      const currentIndex = allData.findIndex((d) => d.time === barTime);
+      const prevBar = currentIndex > 0 ? allData[currentIndex - 1] : null;
+      updateLegend(bar, prevBar);
+    }
+  });
+
   // Handle window resize
   window.addEventListener('resize', () => {
     chart.applyOptions({
@@ -455,6 +519,16 @@
 
       candleSeries.setData(finalCandleData);
       chart.timeScale().fitContent();
+
+      // Update legend with last bar data
+      if (finalCandleData.length > 0) {
+        lastBar = finalCandleData[finalCandleData.length - 1];
+        previousBar =
+          finalCandleData.length > 1
+            ? finalCandleData[finalCandleData.length - 2]
+            : null;
+        updateLegend(lastBar, previousBar);
+      }
     } catch (error) {
       showError(`Error loading data: ${error.message}`);
     }

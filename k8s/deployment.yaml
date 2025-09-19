@@ -28,27 +28,29 @@ spec:
                   name: lightweight-charts-db-secret
                   key: DATABASE_URL
             - name: OHLC_LIMIT
-              value: "500"
+              value: '0'
+            - name: APP_TITLE
+              value: 'Lightweight Charts'
             - name: DATASET__TABLE
-              value: "ohlc"
+              value: 'ohlc'
             - name: DATASET__TIME_COLUMN
-              value: "time"
+              value: 'time'
             - name: DATASET__OPEN_COLUMN
-              value: "open"
+              value: 'open'
             - name: DATASET__HIGH_COLUMN
-              value: "high"
+              value: 'high'
             - name: DATASET__LOW_COLUMN
-              value: "low"
+              value: 'low'
             - name: DATASET__CLOSE_COLUMN
-              value: "close"
+              value: 'close'
             - name: DATASET__VOLUME_COLUMN
-              value: "volume"
+              value: 'volume'
             - name: DATASET__SYMBOL_COLUMN
-              value: "symbol"
+              value: 'symbol'
             - name: DATASET__TIMEFRAME_COLUMN
-              value: "timeframe"
+              value: 'timeframe'
             - name: DATASET__EXTRA_COLUMNS
-              value: ""
+              value: ''
           readinessProbe:
             httpGet:
               path: /healthz
@@ -63,8 +65,8 @@ spec:
             periodSeconds: 20
           resources:
             requests:
-              cpu: "100m"
-              memory: "256Mi"
+              cpu: '100m'
+              memory: '256Mi'
             limits:
-              cpu: "500m"
-              memory: "512Mi"
+              cpu: '500m'
+              memory: '512Mi'

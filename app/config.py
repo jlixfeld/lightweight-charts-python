@@ -53,6 +53,7 @@ class Settings(BaseSettings):
 
     database_url: str = "postgresql+psycopg2://postgres:postgres@db:5432/ohlc"
     ohlc_limit: int = Field(0, ge=0, le=50_000)
+    app_title: str = Field("Lightweight Charts", description="Application title displayed in header")
     dataset: DatasetConfig = Field(default_factory=DatasetConfig)
 
     model_config = {

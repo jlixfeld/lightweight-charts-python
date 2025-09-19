@@ -73,9 +73,10 @@ ruff format . && ruff check .
 
 ## Environment Variables
 
-**Database Configuration:**
+**Application Configuration:**
 - `DATABASE_URL` - SQLAlchemy connection string (currently not used, CSV mode active)
-- `OHLC_LIMIT` - Maximum rows per query (default: 500)
+- `OHLC_LIMIT` - Maximum rows per query (default: 0, unlimited)
+- `APP_TITLE` - Application title displayed in header (default: "Lightweight Charts")
 
 **Column Mapping (DATASET__ prefix):**
 - `DATASET__TABLE` - Table/view name (default: "ohlc")
@@ -108,7 +109,7 @@ kubectl apply -f k8s/deployment.yaml
 kubectl apply -f k8s/service.yaml
 
 # Access the chart interface
-kubectl port-forward deploy/lightweight-charts-web 9000:8000
+kubectl port-forward deploy/lightweight-charts 9000:8000
 ```
 
 ## Current Implementation Notes
@@ -118,3 +119,13 @@ kubectl port-forward deploy/lightweight-charts-web 9000:8000
 - Port 8000 is used in containers, mapped to 9000 externally in docker-compose
 - Python 3.11+ required (enforced in code)
 - Ruff is configured for code formatting and linting with specific rules in `pyproject.toml`
+- Chart includes interactive legend showing OHLC values and percentage change
+- Legend updates dynamically on crosshair movement and shows change relative to previous bar's open
+
+## Chart Features
+
+- **Interactive Legend**: Displays Open, High, Low, Close values with 4 decimal precision
+- **Change Calculation**: Shows both numerical and percentage change relative to previous bar's open price
+- **Pattern Detection**: Highlights inside bars (white) and outside bars (yellow) automatically
+- **Symbol Search**: Searchable symbol picker with real-time filtering and keyboard navigation
+- **Responsive Design**: Dark theme optimized for financial data visualization

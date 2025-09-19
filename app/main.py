@@ -89,7 +89,9 @@ async def chart_page(
         else:
             csv_path = "/workspace/ohlcv.csv"
             state = csv_services.build_chart_state_from_csv(csv_path, symbol, timeframe)
-        return templates.TemplateResponse("chart.html", {"request": request, "state": state})
+        return templates.TemplateResponse(
+            "chart.html", {"request": request, "state": state, "app_title": settings.app_title}
+        )
     except Exception as exc:
         logger.error(f"Failed to build chart state: {exc}")
         # Fallback state for error cases
@@ -102,4 +104,6 @@ async def chart_page(
             "volumeEnabled": False,
             "error": str(exc),
         }
-        return templates.TemplateResponse("chart.html", {"request": request, "state": error_state})
+        return templates.TemplateResponse(
+            "chart.html", {"request": request, "state": error_state, "app_title": settings.app_title}
+        )

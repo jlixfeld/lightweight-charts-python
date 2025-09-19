@@ -1,16 +1,15 @@
-version: '3.8'
-
 services:
   web:
     build:
       context: ..
       dockerfile: docker/Dockerfile
     ports:
-      - "9000:8000"
+      - '9000:8000'
     environment:
-      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg2://localhost:5432}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg2://stratalgo:stratalgo@host.docker.internal:5432}
       OHLC_LIMIT: ${OHLC_LIMIT:-0}
-      DATASET__TABLE: ${DATASET__TABLE:-thestrat_indicators}
+      APP_TITLE: ${APP_TITLE:-Lightweight Charts}
+      DATASET__TABLE: ${DATASET__TABLE:-market_data}
       DATASET__TIME_COLUMN: ${DATASET__TIME_COLUMN:-time}
       DATASET__OPEN_COLUMN: ${DATASET__OPEN_COLUMN:-open}
       DATASET__HIGH_COLUMN: ${DATASET__HIGH_COLUMN:-high}
@@ -24,7 +23,7 @@ services:
       - ..:/workspace
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:8000/healthz']
       interval: 30s
       timeout: 10s
       retries: 3
