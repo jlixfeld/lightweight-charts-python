@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lwc-web
+  labels:
+    app: lwc-web
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lwc-web
+  template:
+    metadata:
+      labels:
+        app: lwc-web
+    spec:
+      containers:
+        - name: lwc-web
+          image: your-registry/lightweight-charts-web:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: lwc-db-secret
+                  key: DATABASE_URL
+            - name: OHLC_LIMIT
+              value: "500"
+            - name: DATASET__TABLE
+              value: "ohlc"
+            - name: DATASET__TIME_COLUMN
+              value: "time"
+            - name: DATASET__OPEN_COLUMN
+              value: "open"
+            - name: DATASET__HIGH_COLUMN
+              value: "high"
+            - name: DATASET__LOW_COLUMN
+              value: "low"
+            - name: DATASET__CLOSE_COLUMN
+              value: "close"
+            - name: DATASET__VOLUME_COLUMN
+              value: "volume"
+            - name: DATASET__SYMBOL_COLUMN
+              value: "symbol"
+            - name: DATASET__TIMEFRAME_COLUMN
+              value: "timeframe"
+            - name: DATASET__EXTRA_COLUMNS
+              value: ""
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"

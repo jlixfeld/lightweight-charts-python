@@ -1,0 +1,22 @@
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "9000:8000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-sqlite:///workspace/demo.db}
+      OHLC_LIMIT: ${OHLC_LIMIT:-500}
+      DATASET__TABLE: ${DATASET__TABLE:-ohlc}
+      DATASET__TIME_COLUMN: ${DATASET__TIME_COLUMN:-time}
+      DATASET__OPEN_COLUMN: ${DATASET__OPEN_COLUMN:-open}
+      DATASET__HIGH_COLUMN: ${DATASET__HIGH_COLUMN:-high}
+      DATASET__LOW_COLUMN: ${DATASET__LOW_COLUMN:-low}
+      DATASET__CLOSE_COLUMN: ${DATASET__CLOSE_COLUMN:-close}
+      DATASET__VOLUME_COLUMN: ${DATASET__VOLUME_COLUMN:-volume}
+      DATASET__SYMBOL_COLUMN: ${DATASET__SYMBOL_COLUMN:-symbol}
+      DATASET__TIMEFRAME_COLUMN: ${DATASET__TIMEFRAME_COLUMN:-timeframe}
+      DATASET__EXTRA_COLUMNS: ${DATASET__EXTRA_COLUMNS:-}
+    volumes:
+      - ..:/workspace
