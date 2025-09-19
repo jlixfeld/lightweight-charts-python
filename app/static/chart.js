@@ -9,7 +9,11 @@
   const patternToggle = document.getElementById('pattern-toggle');
 
   if (!chartContainer) {
-    console.error('Chart container not found');
+    return;
+  }
+
+  if (!window.LightweightCharts) {
+    showError('Failed to load charting library');
     return;
   }
 
@@ -47,8 +51,6 @@
         const pattern = this.detectPattern(current, previous);
 
         if (pattern) {
-          console.log(`Pattern detected at index ${index}:`, pattern);
-
           if (pattern === this.PATTERNS.INSIDE_BAR) {
             patternsFound.inside++;
             const isBullish = current.close >= current.open;
@@ -73,20 +75,35 @@
         return candle;
       });
 
-      console.log(`Bar patterns detected: ${patternsFound.inside} inside bars, ${patternsFound.outside} outside bars`);
       return result;
     }
   }
 
-  // Handle initial state errors
-  if (state.error) {
-    errorBanner.textContent = state.error;
+  function showError(message) {
+    errorBanner.textContent = message;
     errorBanner.style.display = 'block';
   }
 
-  if (!state.symbols || state.symbols.length === 0) {
+  function hideError() {
+    errorBanner.style.display = 'none';
+  }
+
+  function showEmpty(message = 'No data for the selected inputs.') {
+    emptyNotice.textContent = message;
     emptyNotice.style.display = 'block';
-    emptyNotice.textContent = 'No symbols available. Ensure the dataset is populated.';
+  }
+
+  function hideEmpty() {
+    emptyNotice.style.display = 'none';
+  }
+
+  // Handle initial state errors
+  if (state.error) {
+    showError(state.error);
+  }
+
+  if (!state.symbols || state.symbols.length === 0) {
+    showEmpty('No symbols available. Ensure the dataset is populated.');
     return;
   }
 
@@ -116,26 +133,33 @@
     ? timeframeSelect.value || null
     : null;
 
-  // Create chart using v4.2.0 API
-  const chart = LightweightCharts.createChart(chartContainer, {
-    layout: { background: { color: '#11161c' }, textColor: '#d8dee9' },
+  // Create chart using v5.0.8 API
+  const chart = window.LightweightCharts.createChart(chartContainer, {
+    layout: {
+      background: { color: '#11161c' },
+      textColor: '#d8dee9'
+    },
     width: chartContainer.clientWidth,
     height: chartContainer.clientHeight,
     grid: {
       horzLines: { color: '#1f2933' },
       vertLines: { color: '#1f2933' },
     },
-    crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+    crosshair: { mode: window.LightweightCharts.CrosshairMode.Normal },
     rightPriceScale: { borderVisible: false },
     timeScale: { borderVisible: false },
   });
 
-  const candleSeries = chart.addCandlestickSeries({
-    upColor: '#26a69a', downColor: '#ef5350',
-    borderUpColor: '#26a69a', borderDownColor: '#ef5350',
-    wickUpColor: '#26a69a', wickDownColor: '#ef5350',
+  const candleSeries = chart.addSeries(window.LightweightCharts.CandlestickSeries, {
+    upColor: '#26a69a',
+    downColor: '#ef5350',
+    borderUpColor: '#26a69a',
+    borderDownColor: '#ef5350',
+    wickUpColor: '#26a69a',
+    wickDownColor: '#ef5350',
   });
 
+  // Handle window resize
   window.addEventListener('resize', () => {
     chart.applyOptions({
       width: chartContainer.clientWidth,
@@ -143,6 +167,7 @@
     });
   });
 
+  // Event listeners
   symbolSelect.addEventListener('change', () => {
     currentSymbol = symbolSelect.value;
     loadData();
@@ -161,7 +186,6 @@
 
   async function loadData() {
     try {
-      console.log('Loading data for:', currentSymbol, currentTimeframe);
 
       const params = new URLSearchParams({ symbol: currentSymbol });
       if (currentTimeframe) {
@@ -172,23 +196,20 @@
       const response = await fetch(`/ohlc?${params.toString()}`);
       if (!response.ok) {
         const message = await response.text();
-        console.error('Failed to load data:', message);
-        errorBanner.textContent = `Failed to load data: ${message}`;
-        errorBanner.style.display = 'block';
+        showError(`Failed to load data: ${message}`);
         return;
       }
 
       const rows = await response.json();
-      console.log('Received data rows:', rows.length);
 
       if (!rows.length) {
-        emptyNotice.style.display = 'block';
+        showEmpty();
         candleSeries.setData([]);
         return;
       }
 
-      emptyNotice.style.display = 'none';
-      errorBanner.style.display = 'none';
+      hideEmpty();
+      hideError();
 
       const candleData = rows.map((row) => {
         const time = Math.floor(new Date(row.time).getTime() / 1000);
@@ -201,26 +222,17 @@
         };
       });
 
-      console.log('Converted candlestick data:', candleData.length, 'candles');
-
       const finalCandleData = patternToggle.checked
         ? BarPatterns.applyPatternColors(candleData)
         : candleData;
 
-      console.log('Setting data to chart...');
       candleSeries.setData(finalCandleData);
-
       chart.timeScale().fitContent();
 
-      console.log('Data loading completed successfully');
-
     } catch (error) {
-      console.error('Error loading data:', error);
-      errorBanner.textContent = `Error loading data: ${error.message}`;
-      errorBanner.style.display = 'block';
+      showError(`Error loading data: ${error.message}`);
     }
   }
 
-  console.log('Initializing chart with state:', state);
   loadData();
 })();

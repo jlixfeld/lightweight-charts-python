@@ -50,8 +50,8 @@
             color: #9aa5b1;
         }
     </style>
-    <script>
-        window.__LWC_STATE__ = {{ state | tojson }};
+    <script type="text/javascript">
+        window.__LWC_STATE__ = {{ state | tojson | safe }};
     </script>
     <script src="https://unpkg.com/lightweight-charts@5.0.8/dist/lightweight-charts.standalone.production.js"></script>
     <script defer src="{{ request.url_for('static', path='chart.js') }}"></script>
