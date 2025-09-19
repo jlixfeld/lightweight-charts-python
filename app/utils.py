@@ -3,6 +3,7 @@
 
 def sort_timeframes_chronologically(timeframes: list[str]) -> list[str]:
     """Sort timeframes chronologically: Xmin > Xh > Xd > Xw > Xm > Xq > Xy"""
+
     def timeframe_sort_key(tf: str) -> tuple[int, int]:
         # Extract number and unit
         tf_lower = tf.lower()
@@ -26,13 +27,13 @@ def sort_timeframes_chronologically(timeframes: list[str]) -> list[str]:
 
         # Define unit priority (lower number = shorter timeframe)
         unit_priority = {
-            'min': 1,                   # minutes
-            'h': 2,                     # hours
-            'd': 3,                     # days
-            'w': 4,                     # weeks
-            'm': 5,                     # months (in your setup)
-            'q': 6,                     # quarters
-            'y': 7,                     # years
+            "min": 1,  # minutes
+            "h": 2,  # hours
+            "d": 3,  # days
+            "w": 4,  # weeks
+            "m": 5,  # months (in your setup)
+            "q": 6,  # quarters
+            "y": 7,  # years
         }
 
         priority = unit_priority.get(unit, 999)  # Unknown units go to end

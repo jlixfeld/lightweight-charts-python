@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
-
 from sqlalchemy import MetaData, Table, insert, select
 from sqlalchemy.exc import IntegrityError, NoSuchTableError
 from sqlalchemy.orm import Session
@@ -12,7 +10,7 @@ from .database import SessionLocal
 from .utils import sort_timeframes_chronologically
 
 
-class InstrumentNotFound(Exception):
+class InstrumentNotFoundError(Exception):
     """Raised when OHLC inserts reference an unknown symbol."""
 
 
@@ -32,9 +30,7 @@ def _get_dataset_table(session: Session) -> Table:
                 extend_existing=True,
             )
         except NoSuchTableError as exc:
-            raise RuntimeError(
-                f"Dataset table '{cfg.table}' not found. Ensure the database is seeded."
-            ) from exc
+            raise RuntimeError(f"Dataset table '{cfg.table}' not found. Ensure the database is seeded.") from exc
     return _dataset_table
 
 
@@ -45,26 +41,20 @@ def create_instrument(db: Session, payload: schemas.InstrumentCreate) -> schemas
         db.commit()
     except IntegrityError:
         db.rollback()
-        instance = (
-            db.query(models.Instrument)
-            .filter(models.Instrument.symbol == payload.symbol)
-            .one()
-        )
-        if payload.description and instance.description != payload.description:
+        instance = db.query(models.Instrument).filter(models.Instrument.symbol == payload.symbol).one()
+        if payload.description and str(instance.description) != payload.description:
             instance.description = payload.description
             db.commit()
-    db.refresh(instance)
-    return schemas.Instrument.from_orm(instance)
+        db.refresh(instance)
+    else:
+        db.refresh(instance)
+    return schemas.Instrument.model_validate(instance)
 
 
 def create_ohlc(db: Session, payload: schemas.OHLCCreate) -> schemas.OHLC:
-    instrument = (
-        db.query(models.Instrument)
-        .filter(models.Instrument.symbol == payload.symbol)
-        .one_or_none()
-    )
+    instrument = db.query(models.Instrument).filter(models.Instrument.symbol == payload.symbol).one_or_none()
     if instrument is None:
-        raise InstrumentNotFound(f"Instrument '{payload.symbol}' not found.")
+        raise InstrumentNotFoundError(f"Instrument '{payload.symbol}' not found.")
 
     table = _get_dataset_table(db)
     cfg = settings.dataset
@@ -106,9 +96,9 @@ def create_ohlc(db: Session, payload: schemas.OHLCCreate) -> schemas.OHLC:
 
 def list_ohlc(
     db: Session,
-    symbol: Optional[str] = None,
-    timeframe: Optional[str] = None,
-    limit: Optional[int] = None,
+    symbol: str | None = None,
+    timeframe: str | None = None,
+    limit: int | None = None,
 ) -> list[schemas.OHLC]:
     table = _get_dataset_table(db)
     cfg = settings.dataset
@@ -146,11 +136,7 @@ def list_ohlc(
     output: list[schemas.OHLC] = []
     for row in results:
         row_dict = row._mapping
-        extra_data = {
-            col: row_dict[col]
-            for col in extra_cols
-            if row_dict.get(col) is not None
-        } or None
+        extra_data = {col: row_dict[col] for col in extra_cols if row_dict.get(col) is not None} or None
         output.append(
             schemas.OHLC(
                 symbol=row_dict["symbol"],
@@ -171,16 +157,8 @@ def get_metadata(db: Session) -> schemas.Metadata:
     table = _get_dataset_table(db)
     cfg = settings.dataset
 
-    symbol_stmt = (
-        select(table.c[cfg.symbol_column])
-        .distinct()
-        .order_by(table.c[cfg.symbol_column])
-    )
-    timeframe_stmt = (
-        select(table.c[cfg.timeframe_column])
-        .distinct()
-        .order_by(table.c[cfg.timeframe_column])
-    )
+    symbol_stmt = select(table.c[cfg.symbol_column]).distinct().order_by(table.c[cfg.symbol_column])
+    timeframe_stmt = select(table.c[cfg.timeframe_column]).distinct().order_by(table.c[cfg.timeframe_column])
 
     symbols = [row[0] for row in db.execute(symbol_stmt)]
     timeframes = sort_timeframes_chronologically([row[0] for row in db.execute(timeframe_stmt)])
@@ -189,7 +167,7 @@ def get_metadata(db: Session) -> schemas.Metadata:
     return schemas.Metadata(symbols=symbols, timeframes=timeframes, columns=columns)
 
 
-def build_chart_state(symbol: Optional[str] = None, timeframe: Optional[str] = None) -> dict:
+def build_chart_state(symbol: str | None = None, timeframe: str | None = None) -> dict:
     with SessionLocal() as db:
         try:
             metadata = get_metadata(db)
@@ -207,11 +185,10 @@ def build_chart_state(symbol: Optional[str] = None, timeframe: Optional[str] = N
     available_symbols = metadata.symbols
     timeframes = [tf for tf in metadata.timeframes if tf]
 
-    active_symbol = symbol if symbol and symbol in available_symbols else (available_symbols[0] if available_symbols else None)
-    if not timeframes:
-        active_timeframe = None
-    else:
-        active_timeframe = timeframe if timeframe in timeframes else timeframes[0]
+    active_symbol = (
+        symbol if symbol and symbol in available_symbols else (available_symbols[0] if available_symbols else None)
+    )
+    active_timeframe = None if not timeframes else timeframe if timeframe in timeframes else timeframes[0]
 
     return {
         "symbols": available_symbols,

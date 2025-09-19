@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   web:
     build:
@@ -6,7 +8,7 @@ services:
     ports:
       - "9000:8000"
     environment:
-      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg2://stratalgo:stratalgo@host.docker.internal:5432}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg2://localhost:5432}
       OHLC_LIMIT: ${OHLC_LIMIT:-0}
       DATASET__TABLE: ${DATASET__TABLE:-thestrat_indicators}
       DATASET__TIME_COLUMN: ${DATASET__TIME_COLUMN:-time}
@@ -20,3 +22,10 @@ services:
       DATASET__EXTRA_COLUMNS: ${DATASET__EXTRA_COLUMNS:-}
     volumes:
       - ..:/workspace
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

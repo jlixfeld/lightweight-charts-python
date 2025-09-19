@@ -95,6 +95,92 @@ The application includes full PostgreSQL database support, but **database mode i
 
 **Note:** The application is designed as a read-only chart viewer. It reads existing data from your database or CSV files but does not write or modify data sources.
 
+## Development
+
+### Prerequisites
+- Python 3.11+
+- [uv](https://docs.astral.sh/uv/) - Fast Python package manager
+- Node.js 18+ and npm (for JavaScript linting/formatting)
+
+### Quick Start
+```bash
+# Set up development environment
+inv setup
+
+# Start development server
+inv dev
+
+# Run tests
+inv test
+
+# Run all quality checks
+inv check-all
+```
+
+### Available Tasks
+```bash
+# View all available tasks
+inv --list
+
+# Get help for specific task
+inv <task> --help
+
+# Python development tasks
+inv format          # Format Python code with ruff
+inv lint --fix      # Lint and auto-fix Python issues
+inv typecheck       # Run type checking
+inv test --cov      # Run tests with coverage
+inv clean           # Clean cache files
+
+# JavaScript development tasks
+inv format --js     # Format JS/HTML with prettier
+inv lint --js --fix # Lint and auto-fix JS with ESLint
+inv js-check        # Run all JS checks
+inv js-fix          # Fix all JS issues
+
+# Combined tasks
+inv check-all       # Run all Python + JS checks
+inv fix-all         # Fix all Python + JS issues
+
+# Docker development
+inv docker-up       # Start with docker-compose
+inv docker-down     # Stop services
+inv docker-logs     # View logs
+
+# Pre-commit hooks
+inv precommit --install     # Install hooks
+inv precommit --all-files   # Run on all files
+```
+
+### Code Quality
+The project uses:
+
+**Python:**
+- **Ruff** for linting and formatting
+- **MyPy** for type checking
+- **Pytest** for testing
+- **Bandit** for security scanning
+
+**JavaScript:**
+- **ESLint** for linting
+- **Prettier** for formatting
+
+**General:**
+- **Pre-commit** hooks for automated checks
+- **Hadolint** for Dockerfile linting
+
+### Adding Dependencies
+```bash
+# Add production dependency
+inv add package-name
+
+# Add development dependency
+inv add package-name --dev
+
+# Remove dependency
+inv remove package-name
+```
+
 ## Python Version
 
 The app requires Python **3.11** or newer (enforced at import time).

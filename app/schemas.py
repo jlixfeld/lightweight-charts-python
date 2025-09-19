@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -9,14 +8,14 @@ from pydantic import BaseModel
 class Instrument(BaseModel):
     id: int
     symbol: str
-    description: Optional[str] = None
+    description: str | None = None
 
     model_config = {"from_attributes": True}
 
 
 class InstrumentCreate(BaseModel):
     symbol: str
-    description: Optional[str] = None
+    description: str | None = None
 
 
 class OHLC(BaseModel):
@@ -27,8 +26,8 @@ class OHLC(BaseModel):
     high: float
     low: float
     close: float
-    volume: Optional[float] = None
-    extra: Optional[dict] = None
+    volume: float | None = None
+    extra: dict | None = None
 
 
 class OHLCCreate(BaseModel):
@@ -39,11 +38,11 @@ class OHLCCreate(BaseModel):
     high: float
     low: float
     close: float
-    volume: Optional[float] = None
-    extra: Optional[dict] = None
+    volume: float | None = None
+    extra: dict | None = None
 
 
 class Metadata(BaseModel):
-    symbols: List[str]
-    timeframes: List[str]
-    columns: List[str]
+    symbols: list[str]
+    timeframes: list[str]
+    columns: list[str]

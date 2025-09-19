@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import List
 
 from pydantic import BaseModel, Field, field_validator
 from pydantic_settings import BaseSettings
@@ -9,6 +8,7 @@ from pydantic_settings import BaseSettings
 
 class DatasetConfig(BaseModel):
     """Describes how database columns map onto the OHLC schema expected by the app."""
+
     table: str = Field("ohlc", description="Name of the table or view that holds OHLC data")
     time_column: str = Field("time")
     open_column: str = Field("open")
@@ -18,9 +18,18 @@ class DatasetConfig(BaseModel):
     volume_column: str | None = Field("volume")
     symbol_column: str = Field("symbol")
     timeframe_column: str = Field("timeframe")
-    extra_columns: List[str] = Field(default_factory=list)
+    extra_columns: list[str] = Field(default_factory=list)
 
-    @field_validator("table", "time_column", "open_column", "high_column", "low_column", "close_column", "symbol_column", "timeframe_column")
+    @field_validator(
+        "table",
+        "time_column",
+        "open_column",
+        "high_column",
+        "low_column",
+        "close_column",
+        "symbol_column",
+        "timeframe_column",
+    )
     @classmethod
     def validate_identifier(cls, value: str) -> str:
         if not isinstance(value, str):
@@ -41,23 +50,21 @@ class DatasetConfig(BaseModel):
 
 class Settings(BaseSettings):
     """Top-level application settings hydrated from environment variables."""
-    database_url: str = Field(
-        "postgresql+psycopg2://postgres:postgres@db:5432/ohlc",
-        env="DATABASE_URL",
-    )
+
+    database_url: str = "postgresql+psycopg2://postgres:postgres@db:5432/ohlc"
     ohlc_limit: int = Field(0, ge=0, le=50_000)
     dataset: DatasetConfig = Field(default_factory=DatasetConfig)
 
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",
-        "env_nested_delimiter": "__"
+        "env_nested_delimiter": "__",
     }
 
 
-@lru_cache()
+@lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    return Settings()  # type: ignore
 
 
 settings = get_settings()

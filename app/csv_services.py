@@ -1,6 +1,6 @@
-import pandas as pd
-from typing import Optional
 from pathlib import Path
+
+import pandas as pd
 
 from . import schemas
 from .config import settings
@@ -13,7 +13,10 @@ def load_csv_data(csv_path: str = "ohlcv.csv") -> pd.DataFrame:
     if not path.exists():
         raise FileNotFoundError(f"CSV file not found: {csv_path}")
 
-    df = pd.read_csv(path)
+    try:
+        df = pd.read_csv(path, parse_dates=["time"] if Path(csv_path).exists() else [])
+    except Exception as exc:
+        raise ValueError(f"Error reading CSV file {csv_path}: {exc}") from exc
 
     # Add default symbol and timeframe if not present
     if "symbol" not in df.columns:
@@ -26,9 +29,9 @@ def load_csv_data(csv_path: str = "ohlcv.csv") -> pd.DataFrame:
 
 def list_ohlc_from_csv(
     csv_path: str = "ohlcv.csv",
-    symbol: Optional[str] = None,
-    timeframe: Optional[str] = None,
-    limit: Optional[int] = None,
+    symbol: str | None = None,
+    timeframe: str | None = None,
+    limit: int | None = None,
 ) -> list[schemas.OHLC]:
     """Load OHLC data from CSV file."""
     df = load_csv_data(csv_path)
@@ -62,7 +65,7 @@ def list_ohlc_from_csv(
                 high=float(row["high"]),
                 low=float(row["low"]),
                 close=float(row["close"]),
-                volume=float(row["volume"]) if pd.notna(row.get("volume")) else None,
+                volume=(float(row["volume"]) if "volume" in row and pd.notna(row["volume"]) else None),
                 extra=None,
             )
         )
@@ -78,17 +81,13 @@ def get_metadata_from_csv(csv_path: str = "ohlcv.csv") -> schemas.Metadata:
     timeframes = sort_timeframes_chronologically(df["timeframe"].unique().tolist())
     columns = df.columns.tolist()
 
-    return schemas.Metadata(
-        symbols=symbols,
-        timeframes=timeframes,
-        columns=columns
-    )
+    return schemas.Metadata(symbols=symbols, timeframes=timeframes, columns=columns)
 
 
 def build_chart_state_from_csv(
     csv_path: str = "ohlcv.csv",
-    symbol: Optional[str] = None,
-    timeframe: Optional[str] = None
+    symbol: str | None = None,
+    timeframe: str | None = None,
 ) -> dict:
     """Build chart state from CSV data."""
     try:
@@ -107,11 +106,10 @@ def build_chart_state_from_csv(
     available_symbols = metadata.symbols
     timeframes = [tf for tf in metadata.timeframes if tf]
 
-    active_symbol = symbol if symbol and symbol in available_symbols else (available_symbols[0] if available_symbols else None)
-    if not timeframes:
-        active_timeframe = None
-    else:
-        active_timeframe = timeframe if timeframe in timeframes else timeframes[0]
+    active_symbol = (
+        symbol if symbol and symbol in available_symbols else (available_symbols[0] if available_symbols else None)
+    )
+    active_timeframe = None if not timeframes else timeframe if timeframe in timeframes else timeframes[0]
 
     return {
         "symbols": available_symbols,

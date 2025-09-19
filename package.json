@@ -1,0 +1,25 @@
+{
+  "name": "lightweight-charts-python",
+  "version": "0.1.0",
+  "description": "FastAPI service for TradingView-style OHLC charts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "lint": "eslint app/static/**/*.js",
+    "lint:fix": "eslint app/static/**/*.js --fix",
+    "format": "prettier --write app/static/**/*.js app/templates/**/*.html",
+    "format:check": "prettier --check app/static/**/*.js app/templates/**/*.html",
+    "check": "npm run lint && npm run format:check",
+    "fix": "npm run lint:fix && npm run format"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.12.0",
+    "eslint": "^9.12.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.3.3",
+    "globals": "^15.11.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

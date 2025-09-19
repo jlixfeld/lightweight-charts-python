@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: lwc-web
+  name: lightweight-charts
   labels:
-    app: lwc-web
+    app: lightweight-charts
   namespace: default
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: lwc-web
+      app: lightweight-charts
   template:
     metadata:
       labels:
-        app: lwc-web
+        app: lightweight-charts
     spec:
       containers:
-        - name: lwc-web
+        - name: lightweight-charts
           image: your-registry/lightweight-charts-web:latest
           imagePullPolicy: IfNotPresent
           ports:
@@ -25,7 +25,7 @@ spec:
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
-                  name: lwc-db-secret
+                  name: lightweight-charts-db-secret
                   key: DATABASE_URL
             - name: OHLC_LIMIT
               value: "500"

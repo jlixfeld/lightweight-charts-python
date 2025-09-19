@@ -1,14 +1,14 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: lwc-web
+  name: lightweight-charts-web
   labels:
-    app: lwc-web
+    app: lightweight-charts-web
   namespace: default
 spec:
   type: ClusterIP
   selector:
-    app: lwc-web
+    app: lightweight-charts-web
   ports:
     - name: http
       protocol: TCP

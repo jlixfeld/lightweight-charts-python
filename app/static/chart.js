@@ -3,7 +3,6 @@
   const chartContainer = document.getElementById('chart');
   const emptyNotice = document.getElementById('empty');
   const errorBanner = document.getElementById('error-banner');
-  const symbolPicker = document.getElementById('symbol-picker');
   const symbolInput = document.getElementById('symbol-input');
   const symbolDropdown = document.getElementById('symbol-dropdown');
   const symbolList = document.getElementById('symbol-list');
@@ -102,7 +101,7 @@
 
     filterSymbols(query) {
       const searchTerm = query.toLowerCase();
-      this.filteredSymbols = this.symbols.filter(symbol =>
+      this.filteredSymbols = this.symbols.filter((symbol) =>
         symbol.toLowerCase().includes(searchTerm)
       );
       this.selectedIndex = -1;
@@ -132,7 +131,10 @@
         const query = this.input.value.toLowerCase();
         if (query && symbol.toLowerCase().includes(query)) {
           const regex = new RegExp(`(${query})`, 'gi');
-          item.innerHTML = symbol.replace(regex, '<span class="symbol-match">$1</span>');
+          item.innerHTML = symbol.replace(
+            regex,
+            '<span class="symbol-match">$1</span>'
+          );
         } else {
           item.textContent = symbol;
         }
@@ -181,14 +183,21 @@
     }
 
     navigateDown() {
-      if (this.filteredSymbols.length === 0) return;
+      if (this.filteredSymbols.length === 0) {
+        return;
+      }
 
-      this.selectedIndex = Math.min(this.selectedIndex + 1, this.filteredSymbols.length - 1);
+      this.selectedIndex = Math.min(
+        this.selectedIndex + 1,
+        this.filteredSymbols.length - 1
+      );
       this.updateHighlight();
     }
 
     navigateUp() {
-      if (this.filteredSymbols.length === 0) return;
+      if (this.filteredSymbols.length === 0) {
+        return;
+      }
 
       this.selectedIndex = Math.max(this.selectedIndex - 1, 0);
       this.updateHighlight();
@@ -204,7 +213,7 @@
       if (this.selectedIndex >= 0 && items[this.selectedIndex]) {
         items[this.selectedIndex].scrollIntoView({
           block: 'nearest',
-          behavior: 'smooth'
+          behavior: 'smooth',
         });
       }
     }
@@ -235,7 +244,9 @@
     };
 
     static detectPattern(current, previous) {
-      if (!previous) return null;
+      if (!previous) {
+        return null;
+      }
 
       // Inside Bar: Current high/low within previous high/low
       if (current.high <= previous.high && current.low >= previous.low) {
@@ -251,10 +262,12 @@
     }
 
     static applyPatternColors(candleData) {
-      let patternsFound = { inside: 0, outside: 0 };
+      const patternsFound = { inside: 0, outside: 0 };
 
       const result = candleData.map((candle, index) => {
-        if (index === 0) return candle;
+        if (index === 0) {
+          return candle;
+        }
 
         const current = candle;
         const previous = candleData[index - 1];
@@ -267,7 +280,7 @@
             return {
               ...current,
               color: 'white',
-              wickColor: isBullish ? '#26a69a' : '#ef5350'
+              wickColor: isBullish ? '#26a69a' : '#ef5350',
             };
           }
 
@@ -277,7 +290,7 @@
             return {
               ...current,
               color: 'yellow',
-              wickColor: isBullish ? '#26a69a' : '#ef5350'
+              wickColor: isBullish ? '#26a69a' : '#ef5350',
             };
           }
         }
@@ -351,15 +364,14 @@
     timeframeSelect.value = state.activeTimeframe || state.timeframes[0];
   }
 
-  let currentTimeframe = state.timeframes && state.timeframes.length
-    ? timeframeSelect.value || null
-    : null;
+  let currentTimeframe =
+    state.timeframes && state.timeframes.length ? timeframeSelect.value || null : null;
 
   // Create chart using v5.0.8 API
   const chart = window.LightweightCharts.createChart(chartContainer, {
     layout: {
       background: { color: '#11161c' },
-      textColor: '#d8dee9'
+      textColor: '#d8dee9',
     },
     width: chartContainer.clientWidth,
     height: chartContainer.clientHeight,
@@ -398,10 +410,8 @@
     });
   }
 
-
   async function loadData() {
     try {
-
       const params = new URLSearchParams({ symbol: currentSymbol });
       if (currentTimeframe) {
         params.append('timeframe', currentTimeframe);
@@ -445,7 +455,6 @@
 
       candleSeries.setData(finalCandleData);
       chart.timeScale().fitContent();
-
     } catch (error) {
       showError(`Error loading data: ${error.message}`);
     }
