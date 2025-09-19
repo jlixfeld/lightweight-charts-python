@@ -406,7 +406,11 @@
       if (currentTimeframe) {
         params.append('timeframe', currentTimeframe);
       }
-      params.append('limit', state.limit || 500);
+      // Only add limit parameter if it's > 0 (0 means unlimited)
+      const limitValue = state.limit || 0;
+      if (limitValue > 0) {
+        params.append('limit', limitValue);
+      }
 
       const response = await fetch(`/ohlc?${params.toString()}`);
       if (!response.ok) {

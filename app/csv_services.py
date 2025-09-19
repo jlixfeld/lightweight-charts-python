@@ -4,6 +4,7 @@ from pathlib import Path
 
 from . import schemas
 from .config import settings
+from .utils import sort_timeframes_chronologically
 
 
 def load_csv_data(csv_path: str = "ohlcv.csv") -> pd.DataFrame:
@@ -40,9 +41,14 @@ def list_ohlc_from_csv(
     if timeframe:
         df = df[df["timeframe"] == timeframe]
 
-    # Apply limit
-    limit_value = min(limit or settings.ohlc_limit, settings.ohlc_limit)
-    df = df.head(limit_value)
+    # Apply limit (0 means unlimited)
+    if settings.ohlc_limit == 0:
+        limit_value = limit if limit else 0
+    else:
+        limit_value = min(limit or settings.ohlc_limit, settings.ohlc_limit)
+
+    if limit_value > 0:
+        df = df.head(limit_value)
 
     # Convert to OHLC schema objects
     ohlc_data = []
@@ -69,7 +75,7 @@ def get_metadata_from_csv(csv_path: str = "ohlcv.csv") -> schemas.Metadata:
     df = load_csv_data(csv_path)
 
     symbols = sorted(df["symbol"].unique().tolist())
-    timeframes = sorted(df["timeframe"].unique().tolist())
+    timeframes = sort_timeframes_chronologically(df["timeframe"].unique().tolist())
     columns = df.columns.tolist()
 
     return schemas.Metadata(

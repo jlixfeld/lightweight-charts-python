@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from . import models, schemas
 from .config import settings
 from .database import SessionLocal
+from .utils import sort_timeframes_chronologically
 
 
 class InstrumentNotFound(Exception):
@@ -112,7 +113,11 @@ def list_ohlc(
     table = _get_dataset_table(db)
     cfg = settings.dataset
 
-    limit_value = min(limit or settings.ohlc_limit, settings.ohlc_limit)
+    # Handle unlimited (0) case
+    if settings.ohlc_limit == 0:
+        limit_value = limit if limit and limit > 0 else None
+    else:
+        limit_value = min(limit or settings.ohlc_limit, settings.ohlc_limit)
 
     extra_cols = [col for col in cfg.extra_columns if col in table.c]
 
@@ -132,7 +137,9 @@ def list_ohlc(
     if timeframe:
         stmt = stmt.where(table.c[cfg.timeframe_column] == timeframe)
 
-    stmt = stmt.order_by(table.c[cfg.time_column]).limit(limit_value)
+    stmt = stmt.order_by(table.c[cfg.time_column])
+    if limit_value is not None:
+        stmt = stmt.limit(limit_value)
 
     results = db.execute(stmt).all()
 
@@ -176,7 +183,7 @@ def get_metadata(db: Session) -> schemas.Metadata:
     )
 
     symbols = [row[0] for row in db.execute(symbol_stmt)]
-    timeframes = [row[0] for row in db.execute(timeframe_stmt)]
+    timeframes = sort_timeframes_chronologically([row[0] for row in db.execute(timeframe_stmt)])
     columns = [column.name for column in table.columns]
 
     return schemas.Metadata(symbols=symbols, timeframes=timeframes, columns=columns)

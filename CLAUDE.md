@@ -56,9 +56,7 @@ docker compose -f docker/docker-compose.yml up
 # Build and run
 docker compose -f docker/docker-compose.yml up --build
 
-# CSV data ingestion (when using database mode)
-docker compose -f docker/docker-compose.yml exec web \
-  python -m app.ingest ohlcv.csv AAPL 1D --description "Apple daily"
+# Application is ready at http://localhost:9000
 ```
 
 **Code Quality:**
@@ -102,15 +100,15 @@ ruff format . && ruff check .
 **Kubernetes:**
 ```bash
 # Create database secret
-kubectl create secret generic lwc-db-secret \
+kubectl create secret generic lightweight-charts-db-secret \
   --from-literal=DATABASE_URL="postgresql+psycopg2://user:password@db-host:5432/markets"
 
 # Deploy
 kubectl apply -f k8s/deployment.yaml
 kubectl apply -f k8s/service.yaml
 
-# Data ingestion
-kubectl exec -it deploy/lwc-web -- python -m app.ingest ohlcv.csv AAPL 1D
+# Access the chart interface
+kubectl port-forward deploy/lightweight-charts-web 9000:8000
 ```
 
 ## Current Implementation Notes

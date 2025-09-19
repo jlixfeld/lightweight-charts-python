@@ -45,7 +45,7 @@ class Settings(BaseSettings):
         "postgresql+psycopg2://postgres:postgres@db:5432/ohlc",
         env="DATABASE_URL",
     )
-    ohlc_limit: int = Field(500, ge=1, le=50_000)
+    ohlc_limit: int = Field(0, ge=0, le=50_000)
     dataset: DatasetConfig = Field(default_factory=DatasetConfig)
 
     model_config = {

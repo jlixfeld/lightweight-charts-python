@@ -6,9 +6,9 @@ services:
     ports:
       - "9000:8000"
     environment:
-      DATABASE_URL: ${DATABASE_URL:-sqlite:///workspace/demo.db}
-      OHLC_LIMIT: ${OHLC_LIMIT:-500}
-      DATASET__TABLE: ${DATASET__TABLE:-ohlc}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg2://stratalgo:stratalgo@host.docker.internal:5432}
+      OHLC_LIMIT: ${OHLC_LIMIT:-0}
+      DATASET__TABLE: ${DATASET__TABLE:-thestrat_indicators}
       DATASET__TIME_COLUMN: ${DATASET__TIME_COLUMN:-time}
       DATASET__OPEN_COLUMN: ${DATASET__OPEN_COLUMN:-open}
       DATASET__HIGH_COLUMN: ${DATASET__HIGH_COLUMN:-high}
