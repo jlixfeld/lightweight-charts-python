@@ -3,10 +3,12 @@
   const chartContainer = document.getElementById('chart');
   const emptyNotice = document.getElementById('empty');
   const errorBanner = document.getElementById('error-banner');
-  const symbolSelect = document.getElementById('symbol-select');
+  const symbolPicker = document.getElementById('symbol-picker');
+  const symbolInput = document.getElementById('symbol-input');
+  const symbolDropdown = document.getElementById('symbol-dropdown');
+  const symbolList = document.getElementById('symbol-list');
   const timeframeSelect = document.getElementById('timeframe-select');
   const timeframeWrapper = document.getElementById('timeframe-wrapper');
-  const patternToggle = document.getElementById('pattern-toggle');
 
   if (!chartContainer) {
     return;
@@ -15,6 +17,214 @@
   if (!window.LightweightCharts) {
     showError('Failed to load charting library');
     return;
+  }
+
+  // Searchable Symbol Picker System
+  class SymbolPicker {
+    constructor(input, dropdown, list, symbols, onSelect) {
+      this.input = input;
+      this.dropdown = dropdown;
+      this.list = list;
+      this.symbols = symbols;
+      this.onSelect = onSelect;
+      this.filteredSymbols = [...symbols];
+      this.selectedIndex = -1;
+      this.isOpen = false;
+      this.currentSymbol = symbols[0] || '';
+
+      this.init();
+    }
+
+    init() {
+      this.input.value = this.currentSymbol;
+      this.setupEventListeners();
+      this.renderSymbols();
+    }
+
+    setupEventListeners() {
+      // Click on input to open/close
+      this.input.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (this.isOpen) {
+          this.close();
+        } else {
+          this.open();
+        }
+      });
+
+      // Input events for search
+      this.input.addEventListener('input', () => {
+        this.filterSymbols(this.input.value);
+      });
+
+      // Keyboard navigation
+      this.input.addEventListener('keydown', (e) => {
+        this.handleKeydown(e);
+      });
+
+      // Click outside to close
+      document.addEventListener('click', (e) => {
+        if (!this.input.contains(e.target) && !this.dropdown.contains(e.target)) {
+          this.close();
+        }
+      });
+
+      // Focus events
+      this.input.addEventListener('focus', () => {
+        this.open();
+      });
+
+      this.input.addEventListener('blur', () => {
+        // Delay to allow clicking on dropdown items
+        setTimeout(() => {
+          if (!this.dropdown.contains(document.activeElement)) {
+            this.close();
+          }
+        }, 150);
+      });
+    }
+
+    open() {
+      this.isOpen = true;
+      this.input.removeAttribute('readonly');
+      this.dropdown.classList.add('show');
+      this.selectedIndex = -1;
+      this.filterSymbols(this.input.value);
+    }
+
+    close() {
+      this.isOpen = false;
+      this.input.setAttribute('readonly', 'true');
+      this.dropdown.classList.remove('show');
+      this.input.value = this.currentSymbol;
+      this.selectedIndex = -1;
+    }
+
+    filterSymbols(query) {
+      const searchTerm = query.toLowerCase();
+      this.filteredSymbols = this.symbols.filter(symbol =>
+        symbol.toLowerCase().includes(searchTerm)
+      );
+      this.selectedIndex = -1;
+      this.renderSymbols();
+    }
+
+    renderSymbols() {
+      this.list.innerHTML = '';
+
+      if (this.filteredSymbols.length === 0) {
+        const noResults = document.createElement('div');
+        noResults.className = 'symbol-item';
+        noResults.textContent = 'No symbols found';
+        noResults.style.color = '#9aa5b1';
+        noResults.style.cursor = 'default';
+        this.list.appendChild(noResults);
+        return;
+      }
+
+      this.filteredSymbols.forEach((symbol, index) => {
+        const item = document.createElement('div');
+        item.className = 'symbol-item';
+        item.dataset.symbol = symbol;
+        item.dataset.index = index;
+
+        // Highlight search matches
+        const query = this.input.value.toLowerCase();
+        if (query && symbol.toLowerCase().includes(query)) {
+          const regex = new RegExp(`(${query})`, 'gi');
+          item.innerHTML = symbol.replace(regex, '<span class="symbol-match">$1</span>');
+        } else {
+          item.textContent = symbol;
+        }
+
+        if (symbol === this.currentSymbol) {
+          item.classList.add('selected');
+        }
+
+        item.addEventListener('click', () => {
+          this.selectSymbol(symbol);
+        });
+
+        this.list.appendChild(item);
+      });
+    }
+
+    handleKeydown(e) {
+      if (!this.isOpen) {
+        if (e.key === 'Enter' || e.key === 'ArrowDown') {
+          e.preventDefault();
+          this.open();
+        }
+        return;
+      }
+
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          this.navigateDown();
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          this.navigateUp();
+          break;
+        case 'Enter':
+          e.preventDefault();
+          if (this.selectedIndex >= 0 && this.filteredSymbols[this.selectedIndex]) {
+            this.selectSymbol(this.filteredSymbols[this.selectedIndex]);
+          }
+          break;
+        case 'Escape':
+          e.preventDefault();
+          this.close();
+          break;
+      }
+    }
+
+    navigateDown() {
+      if (this.filteredSymbols.length === 0) return;
+
+      this.selectedIndex = Math.min(this.selectedIndex + 1, this.filteredSymbols.length - 1);
+      this.updateHighlight();
+    }
+
+    navigateUp() {
+      if (this.filteredSymbols.length === 0) return;
+
+      this.selectedIndex = Math.max(this.selectedIndex - 1, 0);
+      this.updateHighlight();
+    }
+
+    updateHighlight() {
+      const items = this.list.querySelectorAll('.symbol-item');
+      items.forEach((item, index) => {
+        item.classList.toggle('highlighted', index === this.selectedIndex);
+      });
+
+      // Scroll highlighted item into view
+      if (this.selectedIndex >= 0 && items[this.selectedIndex]) {
+        items[this.selectedIndex].scrollIntoView({
+          block: 'nearest',
+          behavior: 'smooth'
+        });
+      }
+    }
+
+    selectSymbol(symbol) {
+      this.currentSymbol = symbol;
+      this.input.value = symbol;
+      this.close();
+      if (this.onSelect) {
+        this.onSelect(symbol);
+      }
+    }
+
+    setValue(symbol) {
+      if (this.symbols.includes(symbol)) {
+        this.currentSymbol = symbol;
+        this.input.value = symbol;
+        this.renderSymbols();
+      }
+    }
   }
 
   // Bar Pattern Detection System
@@ -107,14 +317,27 @@
     return;
   }
 
-  // Populate dropdowns
-  state.symbols.forEach((symbol) => {
-    const option = document.createElement('option');
-    option.value = symbol;
-    option.textContent = symbol;
-    symbolSelect.appendChild(option);
-  });
-  symbolSelect.value = state.activeSymbol || state.symbols[0];
+  // Initialize symbol picker
+  let symbolPickerInstance;
+  let currentSymbol = state.activeSymbol || state.symbols[0];
+
+  const initSymbolPicker = () => {
+    symbolPickerInstance = new SymbolPicker(
+      symbolInput,
+      symbolDropdown,
+      symbolList,
+      state.symbols,
+      (selectedSymbol) => {
+        currentSymbol = selectedSymbol;
+        loadData();
+      }
+    );
+
+    // Set initial symbol
+    symbolPickerInstance.setValue(currentSymbol);
+  };
+
+  initSymbolPicker();
 
   if (!state.timeframes || state.timeframes.length === 0) {
     timeframeWrapper.style.display = 'none';
@@ -128,7 +351,6 @@
     timeframeSelect.value = state.activeTimeframe || state.timeframes[0];
   }
 
-  let currentSymbol = symbolSelect.value;
   let currentTimeframe = state.timeframes && state.timeframes.length
     ? timeframeSelect.value || null
     : null;
@@ -168,10 +390,6 @@
   });
 
   // Event listeners
-  symbolSelect.addEventListener('change', () => {
-    currentSymbol = symbolSelect.value;
-    loadData();
-  });
 
   if (state.timeframes && state.timeframes.length) {
     timeframeSelect.addEventListener('change', () => {
@@ -180,9 +398,6 @@
     });
   }
 
-  patternToggle.addEventListener('change', () => {
-    loadData();
-  });
 
   async function loadData() {
     try {
@@ -222,9 +437,7 @@
         };
       });
 
-      const finalCandleData = patternToggle.checked
-        ? BarPatterns.applyPatternColors(candleData)
-        : candleData;
+      const finalCandleData = BarPatterns.applyPatternColors(candleData);
 
       candleSeries.setData(finalCandleData);
       chart.timeScale().fitContent();

@@ -39,6 +39,83 @@
             background: #1e2530;
             color: #f5f5f5;
             min-width: 140px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        select:hover {
+            border-color: #4a5568;
+            background: #2a3441;
+        }
+        select:focus {
+            outline: none;
+            border-color: #3182ce;
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+        }
+        .symbol-picker {
+            position: relative;
+            min-width: 140px;
+        }
+        .symbol-input {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #2d3746;
+            background: #1e2530;
+            color: #f5f5f5;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+        .symbol-input:hover {
+            border-color: #4a5568;
+            background: #2a3441;
+        }
+        .symbol-input:focus {
+            outline: none;
+            border-color: #3182ce;
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+            cursor: text;
+        }
+        .symbol-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #1e2530;
+            border: 1px solid #2d3746;
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        .symbol-dropdown.show {
+            display: block;
+        }
+        .symbol-list {
+            padding: 0;
+        }
+        .symbol-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            color: #f5f5f5;
+            border-bottom: 1px solid #2d3746;
+            transition: background-color 0.15s ease;
+        }
+        .symbol-item:last-child {
+            border-bottom: none;
+        }
+        .symbol-item:hover,
+        .symbol-item.highlighted {
+            background: #2a3441;
+        }
+        .symbol-item.selected {
+            background: #3182ce;
+        }
+        .symbol-match {
+            font-weight: 600;
+            color: #3182ce;
         }
         #chart {
             width: 100vw;
@@ -62,18 +139,16 @@
         <div id="error-banner" class="notice" style="display: none; flex: 1; text-align: left; color: #f9a8d4;"></div>
         <label>
             Symbol
-            <select id="symbol-select"></select>
+            <div class="symbol-picker" id="symbol-picker">
+                <input type="text" id="symbol-input" class="symbol-input" placeholder="Search symbols..." readonly>
+                <div class="symbol-dropdown" id="symbol-dropdown">
+                    <div class="symbol-list" id="symbol-list"></div>
+                </div>
+            </div>
         </label>
         <label id="timeframe-wrapper">
             Timeframe
             <select id="timeframe-select"></select>
-        </label>
-        <label>
-            Bar Patterns
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <input type="checkbox" id="pattern-toggle" checked style="margin: 0;">
-                <span style="font-size: 11px;">Highlight Inside/Outside Bars</span>
-            </div>
         </label>
     </header>
     <div id="chart"></div>
