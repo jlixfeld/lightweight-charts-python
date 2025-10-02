@@ -1,4 +1,4 @@
-,time,open,high,low,close,volume,symbol,timeframe
+,timestamp,open,high,low,close,volume,symbol,timeframe
 0,2010-06-25,1.0,1.5,0.8,1.2,100000,DEMO,1D
 1,2010-06-26,1.1,1.3,0.9,1.25,100000,DEMO,1D
 2,2010-06-27,1.0,2.0,0.5,1.8,100000,DEMO,1D

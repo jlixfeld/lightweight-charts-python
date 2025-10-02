@@ -14,7 +14,7 @@ def load_csv_data(csv_path: str = "ohlcv.csv") -> pd.DataFrame:
         raise FileNotFoundError(f"CSV file not found: {csv_path}")
 
     try:
-        df = pd.read_csv(path, parse_dates=["time"] if Path(csv_path).exists() else [])
+        df = pd.read_csv(path, parse_dates=["timestamp"] if Path(csv_path).exists() else [])
     except Exception as exc:
         raise ValueError(f"Error reading CSV file {csv_path}: {exc}") from exc
 
@@ -60,12 +60,12 @@ def list_ohlc_from_csv(
             schemas.OHLC(
                 symbol=row["symbol"],
                 timeframe=row["timeframe"],
-                time=row["time"],
+                time=row["timestamp"],
                 open=float(row["open"]),
                 high=float(row["high"]),
                 low=float(row["low"]),
                 close=float(row["close"]),
-                volume=(float(row["volume"]) if "volume" in row and pd.notna(row["volume"]) else None),
+                volume=float(row["volume"]) if "volume" in row.index and bool(pd.notna(row["volume"])) else None,
                 extra=None,
             )
         )

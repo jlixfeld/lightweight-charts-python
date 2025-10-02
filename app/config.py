@@ -10,7 +10,7 @@ class DatasetConfig(BaseModel):
     """Describes how database columns map onto the OHLC schema expected by the app."""
 
     table: str = Field("ohlc", description="Name of the table or view that holds OHLC data")
-    time_column: str = Field("time")
+    time_column: str = Field("timestamp")
     open_column: str = Field("open")
     high_column: str = Field("high")
     low_column: str = Field("low")
