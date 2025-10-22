@@ -6,7 +6,7 @@ services:
     ports:
       - '9000:8000'
     environment:
-      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg2://stratalgo:stratalgo@host.docker.internal:5432}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg2://strattest:strattest@host.docker.internal:5432}
       OHLC_LIMIT: ${OHLC_LIMIT:-0}
       APP_TITLE: ${APP_TITLE:-Lightweight Charts}
       DATASET__TABLE: ${DATASET__TABLE:-market_data}
